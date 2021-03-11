@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  json.merge:
+    image: ${DOCKER_REGISTRY}/json.merge
+    build:
+      context: .
+      dockerfile: json-merge-app/Dockerfile

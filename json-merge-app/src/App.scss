@@ -1,0 +1,14 @@
+.header {
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  .panel {
+    border: 1px solid rgba(255, 255, 255, 1);
+    border-radius: 15px;
+  }
+}
