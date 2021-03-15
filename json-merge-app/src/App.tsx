@@ -35,6 +35,8 @@ interface IState {
   resultData: string;
 }
 
+declare type TranslationObject = { [key: string]: string | number | object | null | Array<string | number | object | null> };
+
 class App extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -45,10 +47,39 @@ class App extends React.Component<IProps, IState> {
     this.incrementalDataChange = this.incrementalDataChange.bind(this);
   }
 
+  mergeJSON(base: TranslationObject, incremental: TranslationObject, result: TranslationObject) {
+    const keys = [...Object.keys(base), ...Object.keys(incremental)].filter((v, i, a) => a.indexOf(v) === i);
+
+    for (const key of keys) {
+      const baseExists = base?.hasOwnProperty(key);
+      const incrementalExists = incremental?.hasOwnProperty(key);
+
+      if (incrementalExists) {
+        const incrementalType = typeof incremental[key];
+
+        if (['number', 'string'].includes(incrementalType)) {
+          result[key] = incremental[key];
+        } else if (Array.isArray(incremental[key])) {
+          const baseValue = baseExists && Array.isArray(base[key]) ? base[key] as  [] : [];
+          result[key] = [...(incremental[key] as []), ...baseValue].filter((v, i, a) => a.indexOf(v) === i);
+        } else if (incrementalType === 'object') {
+          result[key] = {};
+          this.mergeJSON(base[key] as TranslationObject, incremental[key] as TranslationObject, result[key] as TranslationObject);
+        } else {
+          result[key] = null;
+        }
+      } else if (baseExists) {
+        result[key] = base[key];
+      } else {
+        result[key] = null;
+      }
+    }
+  }
+
   updateState(newState: IState): void {
     let anyErrors = false;
-    let baseDataJson: object = {};
-    let incrementalDataJson: object = {};
+    let baseDataJson: TranslationObject = {};
+    let incrementalDataJson: TranslationObject = {};
 
     try {
       baseDataJson = JSON.parse(newState.baseData);
@@ -72,7 +103,10 @@ class App extends React.Component<IProps, IState> {
       return;
     }
 
-    newState.resultData = JSON.stringify(Object.assign({}, baseDataJson, incrementalDataJson), null, 2);
+    const result: TranslationObject = {};
+    this.mergeJSON(baseDataJson, incrementalDataJson, result);
+
+    newState.resultData = JSON.stringify(result, null, 2);
     this.setState(newState);
   }
 
