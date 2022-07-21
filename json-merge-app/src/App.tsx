@@ -48,7 +48,7 @@ class App extends React.Component<IProps, IState> {
   }
 
   mergeJSON(base: TranslationObject, incremental: TranslationObject, result: TranslationObject) {
-    const keys = [...Object.keys(base), ...Object.keys(incremental)].filter((v, i, a) => a.indexOf(v) === i);
+    const keys = [...Object.keys(base ?? {}), ...Object.keys(incremental ?? {})].filter((v, i, a) => a.indexOf(v) === i);
 
     for (const key of keys) {
       const baseExists = base?.hasOwnProperty(key);
